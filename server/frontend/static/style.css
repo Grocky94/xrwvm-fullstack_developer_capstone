@@ -124,8 +124,9 @@ img{
     text-align:center;
     box-shadow: 2px 2px 3px #999;  
 }
-.contact_us{
-  border: 1px solid black;
-  height: 50px;
-  width: 50px;
+.contact-main{
+  border: 1px solid red;
+  height: 800px;
+  width: 90%;
+  margin: 5;
 }
