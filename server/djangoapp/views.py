@@ -94,8 +94,38 @@ def get_cars(request):
 # # Update the `get_dealerships` view to render the index page with
 # a list of dealerships
 # 
-# def get_dealerships(request):
-# ...
+def get_dealerships(request):
+    try:
+        # Call Express API
+        response = request.get(
+            'http://127.0.0.1:3030/fetchDealers'
+        )
+
+        # Convert response to JSON
+        dealerships = response.json()
+
+        # Render dealership page
+        return render(
+            request,
+            'dealerships.html',
+            {
+                'dealerships': dealerships
+            }
+        )
+
+    except request.exceptions.RequestException as error:
+        logger.error("Error fetching dealerships: %s", error)
+
+        return render(
+            request,
+            'dealerships.html',
+            {
+                'dealerships': []
+            }
+        )
+
+
+
 
 # Create a `get_dealer_reviews` view to render the reviews of a dealer
 # def get_dealer_reviews(request,dealer_id):
