@@ -4,31 +4,32 @@ import "./Dealers.css";
 import "../assets/style.css";
 import Header from '../Header/Header';
 
-
 const PostReview = () => {
+  // 1. Initialize State Variables
   const [dealer, setDealer] = useState({});
   const [review, setReview] = useState("");
-  const [model, setModel] = useState();
+  const [model, setModel] = useState("");
   const [year, setYear] = useState("");
   const [date, setDate] = useState("");
   const [carmodels, setCarmodels] = useState([]);
 
-  let curr_url = window.location.href;
-  let root_url = curr_url.substring(0,curr_url.indexOf("postreview"));
-  let params = useParams();
-  let id =params.id;
-  let dealer_url = root_url+`djangoapp/dealer/${id}`;
-  let review_url = root_url+`djangoapp/add_review`;
-  let carmodels_url = root_url+`djangoapp/get_cars`;
+  // 2. Setup URLs and ID
+  let { id } = useParams();
+  let root_url = window.location.origin;
+  let dealer_url = root_url + "/djangoapp/dealer/" + id;
+  let review_url = root_url + "/djangoapp/add_review";
+  let carmodels_url = root_url + "/djangoapp/get_cars";
 
-  const postreview = async ()=>{
-    let name = sessionStorage.getItem("firstname")+" "+sessionStorage.getItem("lastname");
-    //If the first and second name are stores as null, use the username
-    if(name.includes("null")) {
+  // 3. Post Review Function (Includes parseInt and duplicate fetch fixes)
+  const postreview = async () => {
+    let name = sessionStorage.getItem("firstname") + " " + sessionStorage.getItem("lastname");
+    
+    if (name.includes("null")) {
       name = sessionStorage.getItem("username");
     }
-    if(!model || review === "" || date === "" || year === "" || model === "") {
-      alert("All details are mandatory")
+    
+    if (!model || review === "" || date === "" || year === "" || model === "") {
+      alert("All details are mandatory");
       return;
     }
 
@@ -38,7 +39,7 @@ const PostReview = () => {
 
     let jsoninput = JSON.stringify({
       "name": name,
-      "dealership": id,
+      "dealership": parseInt(id), // Forces the ID to be a number
       "review": review,
       "purchase": true,
       "purchase_date": date,
@@ -47,77 +48,97 @@ const PostReview = () => {
       "car_year": year,
     });
 
-    console.log(jsoninput);
-    const res = await fetch(review_url, {
-      method: "POST",
-      headers: {
+    try {
+      const res = await fetch(review_url, {
+        method: "POST",
+        headers: {
           "Content-Type": "application/json",
-      },
-      body: jsoninput,
-  });
+        },
+        body: jsoninput,
+      });
 
-  const json = await res.json();
-  if (json.status === 200) {
-      window.location.href = window.location.origin+"/dealer/"+id;
-  }
-
-  }
-  const get_dealer = async ()=>{
-    const res = await fetch(dealer_url, {
-      method: "GET"
-    });
-    const retobj = await res.json();
-    
-    if(retobj.status === 200) {
-      let dealerobjs = Array.from(retobj.dealer)
-      if(dealerobjs.length > 0)
-        setDealer(dealerobjs[0])
+      const json = await res.json();
+      console.log("Server Response:", json);
+      
+      // Force the redirect
+      window.location.href = window.location.origin + "/dealer/" + id;
+      
+    } catch (error) {
+      console.error("Fetch error:", error);
+      alert("Network error occurred while posting.");
     }
   }
 
-  const get_cars = async ()=>{
-    const res = await fetch(carmodels_url, {
-      method: "GET"
-    });
-    const retobj = await res.json();
-    
-    let carmodelsarr = Array.from(retobj.CarModels)
-    setCarmodels(carmodelsarr)
+  // 4. Get Dealer Details (Includes null bypass fix)
+  const get_dealer = async () => {
+    try {
+      const res = await fetch(dealer_url, { method: "GET" });
+      const retobj = await res.json();
+      
+      if (retobj.status === 200) {
+        let dealerobjs = Array.from(retobj.dealer || []);
+        if (dealerobjs.length > 0) {
+          setDealer(dealerobjs[0]);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching dealer:", error);
+    }
   }
+
+  // 5. Get Car Models
+  const get_cars = async () => {
+    try {
+      const res = await fetch(carmodels_url, { method: "GET" });
+      const retobj = await res.json();
+      
+      let carmodelsarr = Array.from(retobj.CarModels || []);
+      setCarmodels(carmodelsarr);
+    } catch (error) {
+      console.error("Error fetching cars:", error);
+    }
+  }
+
+  // 6. Run on Component Load
   useEffect(() => {
     get_dealer();
     get_cars();
-  },[]);
+  }, []);
 
-
+  // 7. Render UI
   return (
     <div>
-      <Header/>
-      <div  style={{margin:"5%"}}>
-      <h1 style={{color:"darkblue"}}>{dealer.full_name}</h1>
-      <textarea id='review' cols='50' rows='7' onChange={(e) => setReview(e.target.value)}></textarea>
-      <div className='input_field'>
-      Purchase Date <input type="date" onChange={(e) => setDate(e.target.value)}/>
-      </div>
-      <div className='input_field'>
-      Car Make 
-      <select name="cars" id="cars" onChange={(e) => setModel(e.target.value)}>
-      <option value="" selected disabled hidden>Choose Car Make and Model</option>
-      {carmodels.map(carmodel => (
-          <option value={carmodel.CarMake+" "+carmodel.CarModel}>{carmodel.CarMake} {carmodel.CarModel}</option>
-      ))}
-      </select>        
-      </div >
+      <Header />
+      <div style={{ margin: "5%" }}>
+        <h1 style={{ color: "darkblue" }}>{dealer?.full_name}</h1>
+        <textarea id='review' cols='50' rows='7' onChange={(e) => setReview(e.target.value)}></textarea>
+        
+        <div className='input_field'>
+          Purchase Date <input type="date" onChange={(e) => setDate(e.target.value)} />
+        </div>
+        
+        <div className='input_field'>
+          Car Make 
+          <select name="cars" id="cars" onChange={(e) => setModel(e.target.value)}>
+            <option value="" selected disabled hidden>Choose Car Make and Model</option>
+            {carmodels.map(carmodel => (
+              <option key={carmodel.CarMake + carmodel.CarModel} value={carmodel.CarMake + " " + carmodel.CarModel}>
+                {carmodel.CarMake} {carmodel.CarModel}
+              </option>
+            ))}
+          </select>        
+        </div>
 
-      <div className='input_field'>
-      Car Year <input type="int" onChange={(e) => setYear(e.target.value)} max={2023} min={2015}/>
-      </div>
+        <div className='input_field'>
+          Car Year <input type="number" onChange={(e) => setYear(e.target.value)} max={2023} min={2015} />
+        </div>
 
-      <div>
-      <button className='postreview' onClick={postreview}>Post Review</button>
+        <div>
+          <button className='postreview' onClick={postreview}>Post Review</button>
+        </div>
       </div>
-    </div>
     </div>
   )
 }
-export default PostReview
+
+export default PostReview;

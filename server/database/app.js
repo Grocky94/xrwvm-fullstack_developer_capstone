@@ -49,8 +49,11 @@ app.get('/fetchReviews', async (req, res) => {
 // Express route to fetch reviews by a particular dealer
 app.get('/fetchReviews/dealer/:id', async (req, res) => {
   try {
-    const documents = await Reviews.find({dealership: req.params.id});
-    res.json(documents);
+    // 1. Convert the string ID from the URL into a number
+    const dealerId = parseInt(req.params.id);
+
+    const documents = await Reviews.find({dealership: dealerId});
+    res.json();
   } catch (error) {
     res.status(500).json({ error: 'Error fetching documents' });
   }
@@ -79,66 +82,66 @@ app.get('/fetchDealers/:state', async (req, res) => {
 });
 
 // Express route to fetch dealer by a particular id
-// app.get('/fetchDealer/:id', async (req, res) => {
-//   try {
-//     const dealerId = parseInt(req.params.id);
-//     // Find dealership matching the ID
-//     const dealership = await Dealerships.find({ id: dealerId });
-//     res.status(200).json(dealership);
-//   } catch (error) {
-//     res.status(500).json({ error: 'Error fetching dealer by id' });
-//   }
-// });
+app.get('/fetchDealer/:id', async (req, res) => {
+  try {
+    const dealerId = parseInt(req.params.id);
+    // Find dealership matching the ID
+    const dealership = await Dealerships.find({ id: dealerId });
+    res.status(200).json(dealership);
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching dealer by id' });
+  }
+});
 
 // Express route to get all reviews
-// app.get('/fetchReviews', async (req, res) => {
-//   try {
-//     const reviews = await Reviews.find();
-//     res.status(200).json(reviews);
-//   } catch (error) {
-//     res.status(500).json({ error: 'Error fetching reviews' });
-//   }
-// });
+app.get('/fetchReviews', async (req, res) => {
+  try {
+    const reviews = await Reviews.find();
+    res.status(200).json(reviews);
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching reviews' });
+  }
+});
 
 // Express route to get reviews by dealer id
-// app.get('/fetchReviews/dealer/:id', async (req, res) => {
-//   try {
-//     const dealerId = parseInt(req.params.id);
-//     // Find reviews where the dealership ID matches
-//     const reviews = await Reviews.find({ dealership: dealerId });
-//     res.status(200).json(reviews);
-//   } catch (error) {
-//     res.status(500).json({ error: 'Error fetching reviews for dealer' });
-//   }
-// });
+app.get('/fetchReviews/dealer/:id', async (req, res) => {
+  try {
+    const dealerId = parseInt(req.params.id);
+    // Find reviews where the dealership ID matches
+    const reviews = await Reviews.find({ dealership: dealerId });
+    res.status(200).json(reviews);
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching reviews for dealer' });
+  }
+});
 
 // Express route to insert a new review
-// app.post('/insert_review', express.raw({ type: '*/*' }), async (req, res) => {
-//   data = JSON.parse(req.body);
-//   // Find the highest current ID so we can increment it for the new review
-//   const documents = await Reviews.find().sort( { id: -1 } );
-//   let new_id = documents[0] ? documents[0]['id'] + 1 : 1;
+app.post('/insert_review', express.raw({ type: '*/*' }), async (req, res) => {
+  data = JSON.parse(req.body);
+  // Find the highest current ID so we can increment it for the new review
+  const documents = await Reviews.find().sort( { id: -1 } );
+  let new_id = documents[0] ? documents[0]['id'] + 1 : 1;
 
-//   const review = new Reviews({
-//     "id": new_id,
-//     "name": data['name'],
-//     "dealership": data['dealership'],
-//     "review": data['review'],
-//     "purchase": data['purchase'],
-//     "purchase_date": data['purchase_date'],
-//     "car_make": data['car_make'],
-//     "car_model": data['car_model'],
-//     "car_year": data['car_year'],
-//   });
+  const review = new Reviews({
+    "id": new_id,
+    "name": data['name'],
+    "dealership": data['dealership'],
+    "review": data['review'],
+    "purchase": data['purchase'],
+    "purchase_date": data['purchase_date'],
+    "car_make": data['car_make'],
+    "car_model": data['car_model'],
+    "car_year": data['car_year'],
+  });
 
-//   try {
-//     const savedReview = await review.save();
-//     res.json(savedReview);
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).json({ error: 'Error inserting review' });
-//   }
-// });
+  try {
+    const savedReview = await review.save();
+    res.json(savedReview);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: 'Error inserting review' });
+  }
+});
 
 
 app.listen(port, () => {
