@@ -29,6 +29,16 @@ def get_request(endpoint, **kwargs):
         print("Network exception occurred")
 
 
+def post_request(endpoint, json_payload, **kwargs):
+    request_url = backend_url + endpoint
+    try:
+        # This is the line that actually sends the data to Node!
+        response = requests.post(request_url, json=json_payload)
+        return response.json()
+    except Exception as err:
+        print(f"Network exception occurred: {err}")
+        return None
+
 # def analyze_review_sentiments(text):
 # request_url = sentiment_analyzer_url+"analyze/"+text
 
