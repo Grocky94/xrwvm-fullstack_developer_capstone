@@ -9,7 +9,7 @@ import review_icon from "../assets/reviewbutton.png";
 import Header from '../Header/Header';
 
 const Dealer = () => {
-  const [dealer, setDealer] = useState({});
+  const [dealer, setDealer] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [unreviewed, setUnreviewed] = useState(false);
   const [postReview, setPostReview] = useState(<></>);
@@ -27,12 +27,15 @@ const Dealer = () => {
       const res = await fetch(dealer_url, { method: "GET" });
       const retobj = await res.json();
       
-      if (retobj.status === 200) {
-        // CRITICAL FIX: Added || [] to prevent the null iterable crash
-        let dealerobjs = Array.from(retobj.dealer || []);
-        if (dealerobjs.length > 0) {
-          setDealer(dealerobjs[0]);
-        }
+      if (retobj.status === 200 && retobj.dealer) {
+        const dealerData = Array.isArray(retobj.dealer)
+          ? retobj.dealer[0]
+          : retobj.dealer;
+      
+        setDealer(dealerData || null);
+      } else {
+        console.error("No dealer returned:", retobj);
+        setDealer(null);
       }
     } catch (error) {
       console.error("Error fetching dealer:", error);

@@ -145,33 +145,37 @@ app.get('/fetchReviews/dealer/:id', async (req, res) => {
 
 // Express route to insert review
 app.post('/insert_review', express.raw({ type: '*/*' }), async (req, res) => {
-  try {
-    const data = JSON.parse(req.body);
-    console.log("RECEIVED NEW REVIEW:", data); // Add this so we can see it!
-    
-    const documents = await Reviews.find().sort( { id: -1 } );
-    let new_id = documents[0]['id'] + 1;
-    
-    const review = new Reviews({
-      id: new_id,
-      name: data.name,
-      dealership: data.dealership,
-      review: data.review,
-      purchase: data.purchase,
-      purchase_date: data.purchase_date,
-      car_make: data.car_make,
-      car_model: data.car_model,
-      car_year: data.car_year,
-    });
-    
-    const savedReview = await review.save();
-    res.json(savedReview);
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: 'Error inserting review' });
-  }
-});
-
-app.listen(port, () => {
-    console.log(`Express server running on port ${port}`);
-});
+    try {
+      // --- THE BULLETPROOF FIX ---
+      let data;
+      try {
+          data = JSON.parse(req.body);
+      } catch (parseError) {
+          data = req.body; // It was already a JavaScript object!
+      }
+      // ---------------------------
+      
+      console.log("RECEIVED NEW REVIEW:", data); 
+      
+      const documents = await Reviews.find().sort( { id: -1 } );
+      let new_id = documents.length > 0 ? documents[0].id + 1 : 1;
+      
+      const review = new Reviews({
+        id: new_id,
+        name: data.name,
+        dealership: parseInt(data.dealership),
+        review: data.review,
+        purchase: data.purchase,
+        purchase_date: data.purchase_date,
+        car_make: data.car_make,
+        car_model: data.car_model,
+        car_year: data.car_year,
+      });
+      
+      const savedReview = await review.save();
+      res.json(savedReview);
+    } catch (error) {
+      console.log("SERVER ERROR:", error);
+      res.status(500).json({ error: 'Error inserting review' });
+    }
+  });
