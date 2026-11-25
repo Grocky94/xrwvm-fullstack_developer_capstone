@@ -182,7 +182,7 @@ def get_dealer_details(request, dealer_id):
 
 # Create a `add_review` view to submit a review
 # def add_review(request):
-# def add_review(request):
+def add_review(request):
     if(request.user.is_anonymous == False):
         data = json.loads(request.body)
         try:
@@ -193,22 +193,22 @@ def get_dealer_details(request, dealer_id):
     else:
         return JsonResponse({"status":403,"message":"Unauthorized"})
 
-def add_review(request):
-    if not request.user.is_anonymous:
-        data = json.loads(request.body)
-        try:
-            response = post_request("/insert_review", data)
+# def add_review(request):
+    # if not request.user.is_anonymous:
+    #     data = json.loads(request.body)
+    #     try:
+    #         response = post_request("/insert_review", data)
             
             # CRITICAL FIX: Only return 200 if Node actually responded!
-            if response:
-                return JsonResponse({"status": 200, "response": response})
-            else:
-                return JsonResponse({"status": 500, "message": "Database failed to save review"})
+    #         if response:
+    #             return JsonResponse({"status": 200, "response": response})
+    #         else:
+    #             return JsonResponse({"status": 500, "message": "Database failed to save review"})
                 
-        except Exception as e:
-            return JsonResponse({"status": 401, "message": "Error in posting review"})
-    else:
-        return JsonResponse({"status": 403, "message": "Unauthorized"})
+    #     except Exception as e:
+    #         return JsonResponse({"status": 401, "message": "Error in posting review"})
+    # else:
+    #     return JsonResponse({"status": 403, "message": "Unauthorized"})
 
 #Update the `get_dealerships` render list of dealerships all by default, particular state if state is passed
 def get_dealerships(request, state="All"):
